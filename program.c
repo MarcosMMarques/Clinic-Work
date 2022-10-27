@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 
 typedef struct{    //LOGIN
     char user_email[30];
@@ -32,8 +33,8 @@ typedef struct{    //CONSULTA
 
 void mostrarDados(){
 	registration user;
-        FILE *login;
-        login = fopen ("Login.bin", "rb");
+    FILE *login;
+    login = fopen ("Login.bin", "rb");
 	printf("\nListagem de Usuarios Cadastrados");
 	while(fread(&user, sizeof (registration), 1, login)){
 		printf("\n Name: %s\n Password: %s\n", user.user_email, user.password);
@@ -42,22 +43,21 @@ void mostrarDados(){
 	fclose (login);
 }
 
-// void Login(){
-   
-//     switch(option){
-//         case 1:     //Médico
-//             break;
-           
-//         case 2:     //Paciente
-//             break;
-           
-//         case 3:     //Consulta
-//             break;
-//     }
-   
-// }
+int login(char email[30], char password[20]){
+    registration user;
+    FILE *login;
+    login = fopen ("Login.bin", "rb");
+    int authorization=0;
+	while(fread(&user, sizeof (registration), 1, login)){
+		if(strcmp(email, user.user_email) == 0 && strcmp(password,user.password) == 0){
+            authorization = 400;
+            break;
+        }
+	}
+    return authorization;
+}
 
-void registeruser(int quantify_already_exists){
+void registeruser(){
     registration user;
     FILE *login;   
     login = fopen ("Login.bin", "ab");
@@ -69,7 +69,6 @@ void registeruser(int quantify_already_exists){
     fclose (login);
     mostrarDados();
 }
-
 // void verifylogin(){
 // }
 
@@ -79,6 +78,35 @@ void registeruser(int quantify_already_exists){
 // void searchname(){
 
 // }
+
+void logged(){
+    int option, loop=1, aux=0;
+    while(loop){
+        printf("*******************************************\n");
+        printf("Menu:\n");
+        printf("Medico (1)\n");
+        printf("Paciente (2)\n");
+        printf("Consulta (3)\n");
+        printf("Deslogar (0)\n");
+        printf("*******************************************\n");
+        scanf("%d%*c",&option);
+        system("clear");
+        switch(option){
+            case 0:      
+                return;
+    
+            case 1:      
+                
+                break;
+        
+            case 2:      
+                break;
+            
+            case 3:
+                break;
+        }
+    }
+}
 
 int main(){
     int option, loop=1, aux=0;
@@ -90,28 +118,37 @@ int main(){
         printf("Sair do Programa (0)\n");
         printf("*******************************************\n");
         scanf("%d%*c",&option);
+        system("clear");
         switch(option){
             case 0:      //Encerrar
                 loop = 0;
                 break;
     
             case 1:      //Login
+                int loop_login;
+                registration user;
+                printf("Digite o email: ");
+                scanf("%[^\n]%*c", user.user_email);
+                printf("Digite a senha: ");
+                scanf("%[^\n]", user.password);
+                loop_login = 1;
+                while(loop_login <= 3){
+                    int response = login(user.user_email, user.password);
+                    if(response != 400){
+                        loop_login++;
+                    }
+                    else{
+                         logged();
+                         break;
+                    }
+                    if(loop_login){
+                        return 0;
+                    }
+                }
                 break;
         
             case 2:      //Cadastro
-                registeruser(aux);
-                aux++;
-
-                // scanf("%s%*c",name);
-                // printf("%d",fwrite(name , sizeof(name), 2, archive_login));
-                // fclose(archive_login);
-
-                // char leitura[800];
-                // archive_login = fopen ("login-archive.bin", "rb");
-                // printf("\n%d\n",fread(leitura, sizeof(leitura), 2, archive_login));
-                // printf("%s", leitura);
-                // fclose(archive_login);
-                
+                registeruser();
                 break;
         }
     }
