@@ -29,7 +29,7 @@ typedef struct{    //CONSULTA
     char symptom[100];
     char forwading[100];
     char date[11];
-}medical_appointment;
+}struct_medical_appointment;
 
 void mostrarDados(){
 	registration user;
@@ -285,7 +285,41 @@ void patient(){
 }
 
 void list(){
-    
+        medic_struct m;
+        FILE *medic;
+        medic = fopen ("Medic.bin", "rb");
+        int count=0;
+	    while(fread(&m, sizeof (medic_struct), 1, medic)){
+            count++;
+	    }
+        char *specialty_array[count];
+        int response = 1;
+        int aux=0;
+        medic = fopen ("Medic.bin", "rb");
+        while(fread(&m, sizeof (medic_struct), 1, medic)){
+            for(int i=0;i<aux;i++){
+                if(strcmp(specialty_array[i], m.specialty) == 0){
+                    response = 0;
+                }
+            }
+            if(response){
+                specialty_array[aux] = malloc(strlen(m.specialty));
+                strcpy(specialty_array[aux], m.specialty);
+                aux++;
+            }
+            response = 1;
+	    }
+        for(int i=0;i<aux;i++){
+            printf("%s:\n", specialty_array[i]);
+            medic = fopen ("Medic.bin", "rb");
+	        while(fread(&m, sizeof (medic_struct), 1, medic)){
+                if(strcmp(specialty_array[i], m.specialty) == 0){
+                    printf(" %s\n", m.name);
+                }
+	        }
+        }
+        fclose (medic);
+
 }
 
 void medic(){
@@ -326,7 +360,7 @@ void medic(){
                 break;
             
             case 4:
-                // list();
+                list();
         }
     }
 }
@@ -356,6 +390,7 @@ void logged(){
                 break;
             
             case 3:
+                // medical_appointment();
                 break;
         }
     }
