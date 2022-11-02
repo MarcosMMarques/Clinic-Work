@@ -86,27 +86,27 @@ char * touppername(char n[50]){
     return n;
 }
 
-int verify(char numb[6], int type){
+int verify(char numb[12], int type){
     if(type == 1){
         medic_struct m;
         FILE *medic;
         medic = fopen("Medic.bin", "rb");
         while(fread(&m, sizeof (medic_struct), 1, medic)){
             if(strcmp(numb, m.crm) == 0){
+                fclose (medic);
                 return 1;
             }
         }
-        fclose (medic);
     }else if(type == 2){
         patient_struct p;
         FILE *patient;
         patient = fopen("Patient.bin", "rb");
         while(fread(&p, sizeof (patient_struct), 1, patient)){
             if(strcmp(numb, p.cpf) == 0){
+                fclose(patient);   
                 return 1;
             }
         }
-        fclose(patient);
     }
 }
 
@@ -375,7 +375,6 @@ void list(){
 }
 
 void list_medical_appointment(char name[50], int type){
-    char name_found[50];
     char numb_found[12];
     int response = 0;
     struct_medical_appointment c;
@@ -388,7 +387,6 @@ void list_medical_appointment(char name[50], int type){
         patient = fopen("Patient.bin", "rb");
         while(fread(&p, sizeof (patient_struct), 1, patient)){
             if(strcmp(name, p.name) == 0){
-                strcpy(name_found, name);
                 strcpy(numb_found, p.cpf);
                 response = 1;
             }
@@ -421,7 +419,6 @@ void list_medical_appointment(char name[50], int type){
         medic = fopen("Medic.bin", "rb");
         while(fread(&m, sizeof (medic_struct), 1, medic)){
             if(strcmp(name, m.name) == 0){
-                strcpy(name_found, name);
                 strcpy(numb_found, m.crm);
                 response = 1;
             }
