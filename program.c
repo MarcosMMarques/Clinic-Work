@@ -374,6 +374,79 @@ void list(){
 
 }
 
+void list_medical_appointment(char name[50], int type){
+    char name_found[50];
+    char numb_found[12];
+    int response = 0;
+    struct_medical_appointment c;
+    FILE *medical_appointment;
+    strcpy(name, touppername(name));
+
+    if(type == 1){
+        patient_struct p;
+        FILE *patient;
+        patient = fopen("Patient.bin", "rb");
+        while(fread(&p, sizeof (patient_struct), 1, patient)){
+            if(strcmp(name, p.name) == 0){
+                strcpy(name_found, name);
+                strcpy(numb_found, p.cpf);
+                response = 1;
+            }
+        }
+        fclose (patient);
+      
+        if(response == 0){
+            printf("Paciente nao encontrado.");
+            return;
+        } 
+
+        medical_appointment = fopen("Consultas.bin", "rb");
+
+        while(fread(&c, sizeof(struct_medical_appointment), 1, medical_appointment)){
+
+            if(strcmp(numb_found, c.cpf) == 0){
+                printf("\nCrm do Medico: %s", c.crm);
+                printf("\nCPF do Paciente: %s", c.cpf);
+                printf("\nData da consulta: %s",c.date);
+                printf("\nSintomas: %s", c.symptom);
+                printf("\nEncaminhamento: %s\n", c.forwading);
+             }
+        }
+
+        fclose(medical_appointment);
+
+    }else if(type == 2){
+        medic_struct m;
+        FILE *medic;
+        medic = fopen("Medic.bin", "rb");
+        while(fread(&m, sizeof (medic_struct), 1, medic)){
+            if(strcmp(name, m.name) == 0){
+                strcpy(name_found, name);
+                strcpy(numb_found, m.crm);
+                response = 1;
+            }
+        }
+        fclose (medic);
+      
+        if(response == 0){
+            printf("Medico nao encontrado.");
+            return;
+        }
+
+        medical_appointment = fopen("Consultas.bin", "rb");
+        while(fread(&c, sizeof(struct_medical_appointment), 1, medical_appointment)){
+            if(strcmp(numb_found, c.crm) == 0){
+                printf("\nCrm do Medico: %s", c.crm);
+                printf("\nCPF do Paciente: %s", c.cpf);
+                printf("\nData da consulta: %s",c.date);
+                printf("\nSintomas: %s", c.symptom);
+                printf("\nEncaminhamento: %s\n", c.forwading);
+            }
+        }
+
+        fclose(medical_appointment);
+    }
+}
 
 void medic(){
     int loop = 1, option, aux;
@@ -443,13 +516,13 @@ void medical_appointment(){
             case 2:
                 printf("\nDigite o nome do paciente: ");
                 scanf("%[^\n]%*c", name);  
-                //list_medical_appointment(name, 1);
+                list_medical_appointment(name, 1);
                 break;
 
             case 3:
                 printf("\nDigite o nome do medico: ");
                 scanf("%[^\n]%*c", name);  
-                //list_medical_appointment(name, 2);
+                list_medical_appointment(name, 2);
                 break;
         }
     }
