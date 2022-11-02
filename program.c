@@ -1,6 +1,8 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<ctype.h>
+
 
 typedef struct{    //LOGIN
     char user_email[30];
@@ -84,6 +86,30 @@ char * touppername(char n[50]){
     return n;
 }
 
+int verify(char numb[12], int type){
+    if(type == 1){
+        medic_struct m;
+        FILE *medic;
+        medic = fopen("Medic.bin", "rb");
+        while(fread(&m, sizeof (medic_struct), 1, medic)){
+            if(strcmp(numb, m.crm) == 0){
+                fclose (medic);
+                return 1;
+            }
+        }
+    }else if(type == 2){
+        patient_struct p;
+        FILE *patient;
+        patient = fopen("Patient.bin", "rb");
+        while(fread(&p, sizeof (patient_struct), 1, patient)){
+            if(strcmp(numb, p.cpf) == 0){
+                fclose(patient);   
+                return 1;
+            }
+        }
+    }
+}
+
 void append(int quantity, int type){
     if(type == 1){
         for(int i=0;i<quantity;i++){
@@ -128,6 +154,33 @@ void append(int quantity, int type){
             scanf("%[^\n]%*c", p.telephone);
             fwrite (&p, sizeof (patient_struct), 1, patient);
             fclose (patient);
+        }
+    }else if(type == 3){
+        for(int i=0;i<quantity;i++){
+            struct_medical_appointment c;
+            FILE *medical_appoiment;
+            medical_appoiment = fopen ("Consultas.bin", "ab");
+            printf("Consulta: %d\n",i+1);
+            printf("Digite a CRM do medico: ");
+            scanf("%[^\n]%*c", c.crm);
+            if(verify(c.crm, 1) != 1){
+                printf("Medico nao encontrado");
+                return;
+            }
+            printf("Digite o CPF do paciente: ");
+            scanf("%[^\n]%*c", c.cpf);
+            if(verify(c.cpf, 2) != 1){
+                printf("Paciente nao encontrado");
+                return;
+            }
+            printf("Data da consulta: ");
+            scanf("%[^\n]%*c", c.date);
+            printf("Digite os sintomas do paciente: ");
+            scanf("%[^\n]%*c", c.symptom);
+            printf("Digite o encaminhamento: ");
+            scanf("%[^\n]%*c", c.forwading);
+            fwrite(&c, sizeof(struct_medical_appointment), 1,medical_appoiment);
+            fclose (medical_appoiment);
         }
     }
 }
@@ -246,7 +299,7 @@ void patch(char name[50], int type){
 }
 
 void patient(){
-    int loop = 1, option;
+    int loop = 1, option, aux;
     char name[50];
     while(loop){
         printf("\n*******************************************\n");
@@ -257,13 +310,12 @@ void patient(){
         printf("Voltar (0)\n");
         printf("*******************************************\n");
         scanf("%d%*c",&option);
-        system("clear");
+        system("cls");
         switch(option){
             case 0:      
                 return;
     
             case 1:
-                int aux;
                 printf("\nDigite quantos pacientes quer adicionar: ");
                 scanf("%d%*c",&aux);      
                 append(aux, 2);
@@ -322,8 +374,79 @@ void list(){
 
 }
 
+void list_medical_appointment(char name[50], int type){
+    char numb_found[12];
+    int response = 0;
+    struct_medical_appointment c;
+    FILE *medical_appointment;
+    strcpy(name, touppername(name));
+
+    if(type == 1){
+        patient_struct p;
+        FILE *patient;
+        patient = fopen("Patient.bin", "rb");
+        while(fread(&p, sizeof (patient_struct), 1, patient)){
+            if(strcmp(name, p.name) == 0){
+                strcpy(numb_found, p.cpf);
+                response = 1;
+            }
+        }
+        fclose (patient);
+      
+        if(response == 0){
+            printf("Paciente nao encontrado.");
+            return;
+        } 
+
+        medical_appointment = fopen("Consultas.bin", "rb");
+
+        while(fread(&c, sizeof(struct_medical_appointment), 1, medical_appointment)){
+
+            if(strcmp(numb_found, c.cpf) == 0){
+                printf("\nCrm do Medico: %s", c.crm);
+                printf("\nCPF do Paciente: %s", c.cpf);
+                printf("\nData da consulta: %s",c.date);
+                printf("\nSintomas: %s", c.symptom);
+                printf("\nEncaminhamento: %s\n", c.forwading);
+             }
+        }
+
+        fclose(medical_appointment);
+
+    }else if(type == 2){
+        medic_struct m;
+        FILE *medic;
+        medic = fopen("Medic.bin", "rb");
+        while(fread(&m, sizeof (medic_struct), 1, medic)){
+            if(strcmp(name, m.name) == 0){
+                strcpy(numb_found, m.crm);
+                response = 1;
+            }
+        }
+        fclose (medic);
+      
+        if(response == 0){
+            printf("Medico nao encontrado.");
+            return;
+        }
+
+        medical_appointment = fopen("Consultas.bin", "rb");
+        while(fread(&c, sizeof(struct_medical_appointment), 1, medical_appointment)){
+            if(strcmp(numb_found, c.crm) == 0){
+                printf("\nCrm do Medico: %s", c.crm);
+                printf("\nCPF do Paciente: %s", c.cpf);
+                printf("\nData da consulta: %s",c.date);
+                printf("\nSintomas: %s", c.symptom);
+                printf("\nEncaminhamento: %s\n", c.forwading);
+            }
+        }
+
+        fclose(medical_appointment);
+    }
+}
+
 void medic(){
-    int loop = 1, option;
+    int loop = 1, option, aux;
     char name[50];
     while(loop){
         printf("\n*******************************************\n");
@@ -335,13 +458,12 @@ void medic(){
         printf("Voltar (0)\n");
         printf("*******************************************\n");
         scanf("%d%*c",&option);
-        system("clear");
+        system("cls");
         switch(option){
             case 0:      
                 return;
     
             case 1:
-                int aux;
                 printf("\nDigite quantos medicos quer adicionar: ");
                 scanf("%d%*c",&aux);      
                 append(aux, 1);
@@ -365,8 +487,46 @@ void medic(){
     }
 }
 
+void medical_appointment(){
+    int loop = 1, option, aux;
+    char name[50];
+    while(loop){
+        printf("\n*******************************************\n");
+        printf("O que deseja fazer? Digite a opção Desejada:\n");
+        printf("Inserir nova consulta (1)\n");
+        printf("Listar consultas do paciente (2)\n");
+        printf("Listar consultas do medico (3)\n");
+        printf("Voltar (0)\n");
+        printf("*******************************************\n");
+        scanf("%d%*c",&option);
+        system("cls");
+        switch(option){
+            case 0:      
+                return;
+    
+            case 1:
+                printf("\nDigite quantas consultas quer adicionar: ");
+                scanf("%d%*c",&aux);      
+                append(aux, 3);
+                break;  
+
+            case 2:
+                printf("\nDigite o nome do paciente: ");
+                scanf("%[^\n]%*c", name);  
+                list_medical_appointment(name, 1);
+                break;
+
+            case 3:
+                printf("\nDigite o nome do medico: ");
+                scanf("%[^\n]%*c", name);  
+                list_medical_appointment(name, 2);
+                break;
+        }
+    }
+}
+
 void logged(){
-    int option, loop=1, aux=0;
+    int option, loop=1;
     while(loop){
         printf("*******************************************\n");
         printf("Listagem de menus:\n");
@@ -376,7 +536,7 @@ void logged(){
         printf("Deslogar (0)\n");
         printf("*******************************************\n");
         scanf("%d%*c",&option);
-        system("clear");
+        system("cls");
         switch(option){
             case 0:      
                 return;
@@ -390,14 +550,16 @@ void logged(){
                 break;
             
             case 3:
-                // medical_appointment();
+                medical_appointment();
                 break;
         }
     }
 }
 
 int main(){
-    int option, loop=1, aux=0;
+    int option, loop=1;
+    int loop_login = 1;
+    registration user;
     while(loop){
         printf("*******************************************\n");
         printf("O que deseja fazer? Digite a opção Desejada:\n");
@@ -406,15 +568,13 @@ int main(){
         printf("Sair do Programa (0)\n");
         printf("*******************************************\n");
         scanf("%d%*c",&option);
-        system("clear");
+        system("cls");
         switch(option){
             case 0:      
                 loop = 0;
                 break;
     
             case 1:      
-                int loop_login = 1;
-                registration user;
                 while(loop_login <= 3){
                     printf("Digite o email: ");
                     scanf("%[^\n]%*c", user.user_email);
